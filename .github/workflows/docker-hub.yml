@@ -26,7 +26,7 @@ jobs:
       contents: read
     secrets: inherit
     with:
-      image_name: lasuite/hub-backend
+      image_name: mosacloud/hub-backend
       context: .
       file: Dockerfile
       target: backend-production
@@ -39,23 +39,13 @@ jobs:
       contents: read
     secrets: inherit
     with:
-      image_name: lasuite/hub-frontend
+      image_name: mosacloud/hub-frontend
       context: .
       file: src/frontend/Dockerfile
       target: frontend-production
       should_push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
       docker_user: 1001:127
 
-  notify-argocd:
-    needs:
-      - build-and-push-backend
-      - build-and-push-frontend
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview')
-    steps:
-      - uses: numerique-gouv/action-argocd-webhook-notification@main
-        id: notify
-        with:
-          deployment_repo_path: "${{ secrets.DEPLOYMENT_REPO_URL }}"
-          argocd_webhook_secret: "${{ secrets.ARGOCD_PREPROD_WEBHOOK_SECRET }}"
-          argocd_url: "${{ vars.ARGOCD_PREPROD_WEBHOOK_URL }}"
+  # NOTE: upstream notifies ArgoCD here. The mosacloud dev cluster is hand-deployed
+  # (kubectl apply -k apps/dev/), not ArgoCD-managed, so that job is dropped on this
+  # fork. Deploying = push :dev image (this workflow) + apply overlay + rollout restart.
