@@ -58,6 +58,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.image_name }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dev,enable={{is_default_branch}}
+            type=ref,event=tag
       # - name: Run trivy scan
       #   if: ${{ vars.TRIVY_SCAN_ENABLED }} == 'true'
       #   uses: numerique-gouv/action-trivy-cache@main
